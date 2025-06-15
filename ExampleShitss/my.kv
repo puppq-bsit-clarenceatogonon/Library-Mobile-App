@@ -1,0 +1,477 @@
+WindowManager:
+    name: "window_manager"
+    id: window_manager
+
+    LogScreen:
+    HomeScreen:
+    FavoritesScreen:
+    SearchScreen:
+    CategoriesScreen:
+
+
+<LogScreen>:
+    name: "log_screen"
+    id: log_screen
+
+
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color:  (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+
+        MDLabel:
+            size_hint_y: None      # Disable auto height
+            #size_hint_x: None
+            #size_hint: (0.5, 0.5)
+                    # Set custom height
+            text: "RECOMMENDATIONS"
+            halign: "left"
+            spacing: 30
+            padding: 15
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+
+        MDBoxLayout:
+            size_hint_y: None      # Disable auto height
+            height: "2dp"        # Set custom height
+            md_bg_color: 0, 0, 0, 1  # Black background
+
+
+        MDNavigationBar:
+
+            MDNavigationItem:
+                name: 'home'
+                on_release: app.switch_screen('home_screen')
+                MDNavigationItemIcon:
+                    icon:'home'
+                    id: home_icon
+                MDNavigationItemLabel:
+                    text: 'Home'
+
+
+            MDNavigationItem:
+                name: 'favorites'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'bookmark'
+                    id: bookmark_icon
+                MDNavigationItemLabel:
+                    text: 'Favorites'
+                #on_release: app.root.current = "favorites_screen"
+
+
+            MDNavigationItem:
+                name: 'search'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'magnify'
+                    id: magnify_icon
+                MDNavigationItemLabel:
+                    text: 'Search'
+                #on_release: app.root.current = "search_screen"
+
+
+            MDNavigationItem:
+                name: 'categories'
+                on_release: app.switch_screen('categories_screen')
+                MDNavigationItemIcon:
+                    icon:'book-open-variant-outline'
+                    id: book-open-variant-outline_icon
+                MDNavigationItemLabel:
+                    text: 'Categories'
+
+
+
+
+
+
+
+
+
+
+
+
+<HomeScreen>:
+    name: "home_screen"
+    id: home_screen
+
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color:  (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+
+        MDLabel:
+            size_hint_y: None      # Disable auto height
+            height: "60dp"        # Set custom height
+            text: "RECOMMENDATIONS"
+            #font_size:
+            halign: "left"
+            spacing: 30
+            padding: 15
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+
+        MDBoxLayout:
+            size_hint_y: None      # Disable auto height
+            height: "2dp"        # Set custom height
+            md_bg_color: 0, 0, 0, 1  # Black background
+
+
+        MDNavigationBar:
+
+            MDNavigationItem:
+                name: 'home'
+                on_release: app.switch_screen('home_screen')
+                MDNavigationItemIcon:
+                    icon:'home'
+                MDNavigationItemLabel:
+                    text: 'Home'
+
+
+            MDNavigationItem:
+                name: 'favorites'
+                on_release: app.switch_screen('favorites_screen')
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'bookmark'
+                MDNavigationItemLabel:
+                    text: 'Favorites'
+
+
+
+            MDNavigationItem:
+                name: 'search'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'magnify'
+                MDNavigationItemLabel:
+                    text: 'Search'
+
+
+
+            MDNavigationItem:
+                name: 'categories'
+                on_release: app.switch_screen('categories_screen')
+                MDNavigationItemIcon:
+                    icon:'book-open-variant-outline'
+                MDNavigationItemLabel:
+                    text: 'Categories'
+                #on_release: app.root.current = "categories_screen"
+
+
+
+
+
+<FavoritesScreen>:
+    name: "favorites_screen"
+    id: favorites_screen
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color:  (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+
+        MDLabel:
+            size_hint_y: None      # Disable auto height
+            height: "60dp"        # Set custom height
+            text: "FAVORITES"
+            #font_size:
+            halign: "left"
+            spacing: 30
+            padding: 15
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+
+        MDBoxLayout:
+            size_hint_y: None      # Disable auto height
+            height: "2dp"        # Set custom height
+            md_bg_color: 0, 0, 0, 1  # Black background
+
+
+        MDNavigationBar:
+
+            MDNavigationItem:
+                name: 'home'
+                on_release: app.switch_screen('home_screen')
+                MDNavigationItemIcon:
+                    icon:'home'
+                MDNavigationItemLabel:
+                    text: 'Home'
+                #on_release: app.root.current = "home_screen"
+
+            MDNavigationItem:
+                name: 'favorites'
+                on_release: app.switch_screen('favorites_screen')
+                MDNavigationItemIcon:
+                    icon:'bookmark'
+                MDNavigationItemLabel:
+                    text: 'Favorites'
+                #on_release: app.root.current = "favorites_screen"
+
+
+            MDNavigationItem:
+                name: 'search'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'magnify'
+                MDNavigationItemLabel:
+                    text: 'Search'
+                #on_release: app.root.current = "search_screen"
+
+
+            MDNavigationItem:
+                name: 'categories'
+                on_release: app.switch_screen('categories_screen')
+                MDNavigationItemIcon:
+                    icon:'book-open-variant-outline'
+                MDNavigationItemLabel:
+                    text: 'Categories'
+                #on_release: app.root.current = "categories_screen"
+
+
+<SearchScreen>:
+    name: "search_screen"
+    id: search_screen
+
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color:  (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+
+        MDLabel:
+            size_hint_y: None      # Disable auto height
+            height: "60dp"        # Set custom height
+            text: "SEARCH"
+            #font_size:
+            halign: "left"
+            spacing: 30
+            padding: 15
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+
+        MDBoxLayout:
+            size_hint_y: None      # Disable auto height
+            height: "2dp"        # Set custom height
+            md_bg_color: 0, 0, 0, 1  # Black background
+
+
+        MDNavigationBar:
+
+            MDNavigationItem:
+                name: 'home'
+                on_release: app.switch_screen('home_screen')
+                MDNavigationItemIcon:
+                    icon:'home'
+                MDNavigationItemLabel:
+                    text: 'Home'
+                #on_release: app.root.current = "home_screen"
+
+            MDNavigationItem:
+                name: 'favorites'
+                on_release: app.switch_screen('favorites_screen')
+                MDNavigationItemIcon:
+                    icon:'bookmark'
+                MDNavigationItemLabel:
+                    text: 'Favorites'
+                #on_release: app.root.current = "favorites_screen"
+
+
+            MDNavigationItem:
+                name: 'search'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'magnify'
+                MDNavigationItemLabel:
+                    text: 'Search'
+                #on_release: app.root.current = "search_screen"
+
+
+            MDNavigationItem:
+                name: 'categories'
+                on_release: app.switch_screen('categories_screen')
+                MDNavigationItemIcon:
+                    icon:'book-open-variant-outline'
+                MDNavigationItemLabel:
+                    text: 'Categories'
+                #on_release: app.root.current = "categories_screen"
+
+<CategoriesScreen>:
+    name: "categories_screen"
+    id: favorites_screen
+
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color:  (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+
+        MDLabel:
+            size_hint_y: None      # Disable auto height
+            height: "60dp"        # Set custom height
+            text: "CATEGORIES"
+            #font_size:
+            halign: "left"
+            spacing: 30
+            padding: 15
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+
+        MDBoxLayout:
+            size_hint_y: None      # Disable auto height
+            height: "2dp"        # Set custom height
+            md_bg_color: 0, 0, 0, 1  # Black background
+
+
+        MDNavigationBar:
+
+            MDNavigationItem:
+                name: 'home'
+                on_release: app.switch_screen('home_screen')
+                MDNavigationItemIcon:
+                    icon:'home'
+                MDNavigationItemLabel:
+                    text: 'Home'
+                #on_release: app.root.current = "home_screen"
+
+            MDNavigationItem:
+                name: 'favorites'
+                on_release: app.switch_screen('favorites_screen')
+                MDNavigationItemIcon:
+                    icon:'bookmark'
+                MDNavigationItemLabel:
+                    text: 'Favorites'
+                #on_release: app.root.current = "favorites_screen"
+
+
+            MDNavigationItem:
+                name: 'search'
+                on_release: app.switch_screen('search_screen')
+                MDNavigationItemIcon:
+                    icon:'magnify'
+                MDNavigationItemLabel:
+                    text: 'Search'
+                #on_release: app.root.current = "search_screen"
+
+
+            MDNavigationItem:
+                name: 'categories'
+                on_release: app.switch_screen('categories_screen')
+                MDNavigationItemIcon:
+                    icon:'book-open-variant-outline'
+                MDNavigationItemLabel:
+                    text: 'Categories'
+                #on_release: app.root.current = "categories_screen"
+

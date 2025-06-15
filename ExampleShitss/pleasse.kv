@@ -1,0 +1,181 @@
+<BaseMDNavigationItem>:
+    MDNavigationItemIcon:
+        icon: root.icon
+    MDNavigationItemLabel:
+        text: root.text
+
+MDScreenManager:
+    LoginScreen:
+        name: 'login_screen'
+
+    RegisterScreen:
+        name: 'register_screen'
+
+    MainScreen:
+        name: 'main_screen'
+
+
+
+<LoginScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+        spacing: 45
+        padding: [70,  50, 70, 100]
+
+        MDLabel:
+            text: 'WELCOME TO\nPUP-PARANAQUE LIBRARY'
+            halign: 'center'
+            adaptive_size: True
+            pos_hint: {"center_x": .5, "center_y": .5}
+            #padding: "4dp", "60dp"
+            theme_text_color: "Custom"
+            text_color: "red"
+            theme_font_size: "Custom"
+            font_size: "25sp"
+
+
+        MDTextField:
+            id: name
+            MDTextFieldHintText:
+                text: "Name"
+
+
+        MDTextField:
+            id: student_number
+            MDTextFieldHintText:
+                text: "Student number"
+
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            #md_bg_color: (1, 0, 0, 1)
+            size_hint_y: None
+            height: 35
+            spacing: 8
+            #padding: [10, 10, 10, 5]
+
+            MDButton:
+                style: "elevated"
+                theme_shadow_color: "Custom"
+                shadow_color: "red"
+                pos_hint: {"center_x": .9, "center_y": .9}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: .5
+                on_press: root.manager.current = "main_screen"
+
+
+                MDButtonText:
+                    text: "Log-in"
+                    theme_text_color: "Custom"
+                    text_color: "black"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                #on_release:
+                    #root.login(email.text, password.text)
+                    #app.root.current = 'home_screen'
+
+            MDButton:
+                style: "elevated"
+                theme_shadow_color: "Custom"
+                shadow_color: "red"
+                pos_hint: {"center_x": .9, "center_y": .9}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: .5
+                #theme_bg_color: "Custom"
+                #md_bg_color: "brown"
+                on_press: root.manager.current = "register_screen"
+
+
+                MDButtonText:
+                    text: "Register"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    theme_text_color: "Custom"
+                    text_color: "black"
+
+                #on_release:
+                    #app.root.current = 'register_screen'
+
+        MDButton:
+            style: "filled"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_width: "Custom"
+            height: "40dp"
+            size_hint_x: .5
+            theme_bg_color: "Custom"
+            md_bg_color: "brown"
+
+
+            MDButtonText:
+                text: "Librarian"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+            #on_release:
+                #app.root.current = 'librarian_screen'
+
+# RegisterScreen UI
+<RegisterScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+        spacing: 20
+        padding: 50
+
+        MDLabel:
+            text: 'Register '
+            halign: 'center'
+            theme_text_color: "Custom"
+            text_color: "red"
+            theme_font_size: "Custom"
+            font_size: "50sp"
+            #font_style: 'H4'
+
+        MDTextField:
+            id: register_name
+            MDTextFieldHintText:
+                text: "Name"
+
+
+        MDTextField:
+            id: register_email
+            MDTextFieldHintText:
+                text: "Email"
+
+        MDTextField:
+            id: register_student_number
+            MDTextFieldHintText:
+                text: "Student number"
+
+        MDButton:
+            style: "filled"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_width: "Custom"
+            height: "40dp"
+            size_hint_x: .5
+            theme_bg_color: "Custom"
+            md_bg_color: "brown"
+            #on_release:
+                #root.register(register_name.text, register_email.text, register_student_number.text)
+
+
+            MDButtonText:
+                text: "Register"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+
+        MDButton:
+            style: "filled"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_width: "Custom"
+            height: "40dp"
+            size_hint_x: .5
+            theme_bg_color: "Custom"
+            md_bg_color: "brown"
+            on_press: root.manager.current = "login_screen"
+
+
+            MDButtonText:
+                text: "Back to Log-in"
+                pos_hint: {"center_x": .5, "center_y": .5}
