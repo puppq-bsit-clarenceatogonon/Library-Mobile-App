@@ -28,8 +28,10 @@ CREATE TABLE IF NOT EXISTS borrowed_books (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_name TEXT,
     student_number TEXT,
+    book_id INTEGER,
     book_title TEXT,
     book_author TEXT,
+    category TEXT,
     date_borrowed TEXT,
     date_returned TEXT,
     return_status TEXT DEFAULT 'Not Returned'
@@ -46,8 +48,10 @@ CREATE TABLE IF NOT EXISTS return_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_name TEXT,
     student_number TEXT,
+    book_id INTEGER, 
     book_title TEXT,
     author TEXT,
+    category TEXT,
     status TEXT DEFAULT 'Pending',
     date_requested TEXT,
     date_approved TEXT
@@ -65,8 +69,10 @@ CREATE TABLE IF NOT EXISTS borrow_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_number TEXT,
     student_name TEXT,
+    book_id INTEGER,
     book_title TEXT,
     book_author TEXT,
+    category TEXT,
     status TEXT DEFAULT 'Pending',
     date_requested TEXT,
     date_approved TEXT
@@ -155,6 +161,7 @@ class BaseMDNavigationItem(MDNavigationItem):
 
 class HomeScreen(MDScreen):
     pass
+
 
 class FavoritesScreen(MDScreen):
     pass
@@ -925,7 +932,7 @@ class AnoWalangTutulong(MDApp):
 
     # here
 
-    def request_return_book(self, title, author):
+    def request_return_book(self, book_id, title, author, category):
         student_number = getattr(self, 'logged_in_student_number', None)
         if not student_number:
             self.show_generic_dialog("Login required to return books.")
@@ -948,8 +955,8 @@ class AnoWalangTutulong(MDApp):
         #  Check for existing pending return request
         cursor.execute("""
             SELECT * FROM return_requests
-            WHERE student_number = ? AND book_title = ? AND author = ? AND status = 'Pending'
-        """, (student_number, title, author))
+            WHERE student_number = ? AND book_id = ? AND book_title = ? AND author = ? AND category = ? AND status = 'Pending'
+        """, (student_number, book_id, title, author, category))
         existing_request = cursor.fetchone()
 
         if existing_request:
@@ -959,9 +966,9 @@ class AnoWalangTutulong(MDApp):
 
         # Proceed to insert if no duplicate
         cursor.execute("""
-            INSERT INTO return_requests (student_number, student_name, book_title, author, date_requested, status)
-            VALUES (?, ?, ?, ?, ?, 'Pending')
-        """, (student_number, student_name, title, author, date_requested))
+            INSERT INTO return_requests (student_number, student_name, book_id, book_title, author, category, date_requested, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
+        """, (student_number, student_name, book_id, title, author, category, date_requested))
         conn.commit()
         conn.close()
 
@@ -974,18 +981,18 @@ class AnoWalangTutulong(MDApp):
 
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT id, student_name, student_number, book_title, author, status, date_requested, date_approved FROM return_requests")
+        cursor.execute("SELECT id, student_name, student_number, book_id, book_title, author, category, status, date_requested, date_approved FROM return_requests")
 
         requests = cursor.fetchall()
         conn.close()
 
         for req in requests:
-            request_id, name, student_no, book_title, author, status, date_requested, date_approved  = req
+            request_id, name, student_no, book_id, book_title, author,category, status, date_requested, date_approved  = req
 
             list_item = MDListItem()
             list_item.add_widget(MDListItemLeadingIcon(icon="account"))
             list_item.add_widget(MDListItemHeadlineText(text=f"{name} | {student_no}"))
-            list_item.add_widget(MDListItemSupportingText(text=f"{book_title} by {author}"))
+            list_item.add_widget(MDListItemSupportingText(text=f"{book_title} by {author} | {category}"))
             list_item.add_widget(MDListItemTertiaryText(text=f"Requested: {date_requested}  |  Status: {status}  |  Date approved: {date_approved}"))
 
             if status == "Pending":
@@ -1028,19 +1035,19 @@ class AnoWalangTutulong(MDApp):
         cursor = conn.cursor()
 
         # Get book and student info
-        cursor.execute("SELECT book_title, author, student_number FROM return_requests WHERE id = ?", (request_id,))
+        cursor.execute("SELECT book_id, book_title, author, category, student_number FROM return_requests WHERE id = ?", (request_id,))
         book_data = cursor.fetchone()
 
         if book_data:
-            book_title, book_author, student_number = book_data
+            book_id, book_title, book_author, category, student_number = book_data
 
             if new_status == "Approved":
                 #  Set book as available again
                 cursor.execute("""
                     UPDATE books
                     SET availability = 'Available'
-                    WHERE title = ? AND author = ?
-                """, (book_title, book_author))
+                    WHERE id = ? AND title = ? AND author = ? AND category = ?
+                """, (book_id, book_title, book_author, category))
 
                 #  Update borrowed_books with return date and status
                 cursor.execute("""
@@ -1067,14 +1074,14 @@ class AnoWalangTutulong(MDApp):
         # Get book info
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
+        cursor.execute("SELECT id, title, author, category FROM books WHERE id = ?", (book_id,))
         book = cursor.fetchone()
         conn.close()
 
         if not book:
             return
 
-        title, author = book
+        book_id, title, author, category = book
 
         # Get logged-in student
         student_number = getattr(self, 'logged_in_student_number', None)
@@ -1105,8 +1112,8 @@ class AnoWalangTutulong(MDApp):
             # Check for existing borrow request
             cursor.execute("""
                 SELECT * FROM borrow_requests
-                WHERE student_number = ? AND book_title = ? AND book_author = ? AND status = 'Pending'
-            """, (student_number, title, author))
+                WHERE student_number = ? AND book_id = ? AND book_title = ? AND book_author = ? AND category = ? AND status = 'Pending'
+            """, (student_number,book_id, title, author, category))
             existing_request = cursor.fetchone()
 
             if existing_request:
@@ -1120,11 +1127,13 @@ class AnoWalangTutulong(MDApp):
                 INSERT INTO borrow_requests (
                     student_number, 
                     student_name, 
+                    book_id,
                     book_title, 
                     book_author, 
+                    category,
                     date_requested
-                ) VALUES (?, ?, ?, ?, ?)
-            """, (student_number, student_name, title, author, date_requested))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (student_number, student_name, book_id, title, author,category, date_requested))
             conn.commit()
             conn.close()
             self.dialog.dismiss()
@@ -1162,8 +1171,10 @@ class AnoWalangTutulong(MDApp):
             """SELECT rowid,
                     student_name,
                     student_number, 
+                    book_id,
                     book_title,
                     book_author,
+                    category,
                     status,
                     date_requested,
                     date_approved FROM borrow_requests""")
@@ -1171,12 +1182,12 @@ class AnoWalangTutulong(MDApp):
         conn.close()
 
         for request in requests:
-            rowid, student_name, student_number, book_title, book_author, status, date_requested, date_approved = request
+            rowid, student_name, student_number, book_id, book_title, book_author, category, status, date_requested, date_approved = request
 
             item = MDListItem()
             item.add_widget(MDListItemLeadingIcon(icon="account"))
             item.add_widget(MDListItemHeadlineText(text=f"{student_name} | {student_number}"))
-            item.add_widget(MDListItemSupportingText(text=f"{book_title} by {book_author}"))
+            item.add_widget(MDListItemSupportingText(text=f"{book_title} by {book_author}  |  {category}"))
             item.add_widget(MDListItemTertiaryText(text=f"Requested: {date_requested}  |  Status: {status}  |  Date approved: {date_approved}"))
 
             # Only show buttons if not yet approved/rejected
@@ -1206,20 +1217,20 @@ class AnoWalangTutulong(MDApp):
         if new_status == "Approved":
             # Get info from borrow_requests
             cursor.execute("""
-                SELECT student_name, student_number, book_title, book_author
+                SELECT student_name, student_number, book_id, book_title, book_author, category
                 FROM borrow_requests WHERE id=?
             """, (request_id,))
             request = cursor.fetchone()
 
             if request:
-                student_name, student_number, book_title, book_author = request
+                student_name, student_number, book_id, book_title, book_author, category = request
 
                 # Insert into borrowed_books with the new date
                 cursor.execute("""
                     INSERT INTO borrowed_books (
-                        student_name, student_number, book_title, book_author, date_borrowed
-                    ) VALUES (?, ?, ?, ?, ?)
-                """, (student_name, student_number, book_title, book_author, date_approved))
+                        student_name, student_number, book_id , book_title, book_author, category, date_borrowed
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (student_name, student_number, book_id, book_title, book_author, category, date_approved))
 
                 # After inserting to borrowed_books
                 cursor.execute("""
@@ -1254,17 +1265,17 @@ class AnoWalangTutulong(MDApp):
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT book_title, book_author, date_borrowed, date_returned, return_status
+            SELECT book_id, book_title, book_author, category, date_borrowed, date_returned, return_status
             FROM borrowed_books
             WHERE student_number = ?
         """, (student_number,))
         borrowed_books = cursor.fetchall()
         conn.close()
 
-        for title, author,date_borrowed, date_returned, return_status in borrowed_books:
+        for book_id, title, author, category, date_borrowed, date_returned, return_status in borrowed_books:
             item = MDListItem()
             item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant"))
-            item.add_widget(MDListItemHeadlineText(text=f"{title}"))
+            item.add_widget(MDListItemHeadlineText(text=f"{title}  |  {category}"))
             item.add_widget(MDListItemSupportingText(text=f"Author: {author}  |  status: {return_status}"))
             item.add_widget(MDListItemTertiaryText(text=f"Borrowed: {date_borrowed}  |  Returned: {date_returned}"))
 
@@ -1274,7 +1285,8 @@ class AnoWalangTutulong(MDApp):
                     icon="book-arrow-left-outline",
                     theme_icon_color="Custom",
                     icon_color=(0.8, 0.2, 0, 1),
-                    on_release=lambda x, t=title, a=author: self.request_return_book(t, a)
+                    on_release=lambda x, bid=book_id, t=title, a=author, c=category: self.request_return_book(bid, t, a, c)
+
                 )
                 item.add_widget(return_btn)
 
@@ -1291,19 +1303,21 @@ class AnoWalangTutulong(MDApp):
         cursor.execute("""SELECT 
         student_name,
         student_number,
+        book_id,
         book_title,
         book_author,
+        category,
         date_borrowed,
         date_returned,
         return_status FROM borrowed_books""")
         rows = cursor.fetchall()
         conn.close()
 
-        for name, number, title, author, date_borrowed, date_returned, return_status  in rows:
+        for name, number, book_id, title, author, category, date_borrowed, date_returned, return_status  in rows:
             item = MDListItem()
             item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
             item.add_widget(MDListItemHeadlineText(text=f"Student name: {name}  |  Student number: {number}"))
-            item.add_widget(MDListItemSupportingText(text=f"Title: {title}  |  Author: {author}"))
+            item.add_widget(MDListItemSupportingText(text=f"Title: {title}  |  Author: {author}  |  {category}"))
             item.add_widget(MDListItemTertiaryText(text=f"Borrowed: {date_borrowed}  |  Status: {return_status}  |  Returned: {date_returned} "))
             container.add_widget(item)
 
