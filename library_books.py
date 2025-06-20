@@ -5,7 +5,7 @@ books_by_category = {
         ],
         "Hospitality Management": [
             {"title": "Introduction to Hospitality Management", "author": "John R. Walker", "availability": "Available"},
-            {"title": "Hospitality Management and Organisational Behaviour", "author": "Laurie Jay Mullins", "availability": " Available"},
+            {"title": "Hospitality Management and Organisational Behaviour", "author": "Laurie Jay Mullins", "availability": "Available"},
             {"title": "Accommodations Operations and Management", "author": "author", "availability": "Available"},
             {"title": "Introduction to Hospitality Management", "author": "author", "availability": "Available"},
             {"title": "Gastronomy and the Dining Experience", "author": "John R. Walker", "availability": "Available"},
@@ -60,5 +60,6 @@ books_by_category = {
             {"title": "Yoga for All", "author": "Patricia Allen", "availability": "Available"},
         ],
     }
+
 
 

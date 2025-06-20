@@ -49,287 +49,41 @@ MDScreenManager:
     ViewBorrowedScreen:
         name: "view_borrowed_screen"
 
-    ReturnBooksScreen:
-        name: "return_books_screen"
+    #ReturnBooksScreen:
+        #name: "return_books_screen"
 
     PenaltyScreen:
         name: "penalty_screen"
 
+    HomeScreen:
+        name: "home_screen"
+    FavoritesScreen:
+        name: "favorites_screen"
+    SearchScreen:
+        name: "search_screen"
+    CategoriesScreen:
+        name: "categories_screen"
+
     MDScreen:
         name: 'main_screen'
 
-
         MDBoxLayout:
             orientation: "vertical"
-            md_bg_color: self.theme_cls.backgroundColor
 
             MDScreenManager:
-                name: "screen_manager"
                 id: screen_manager
 
-                BaseScreen:
+                HomeScreen:
                     name: "home_screen"
-                    #on_pre_enter: app.load_recommended_books()
-                    MDBoxLayout:
-                        orientation: "vertical"
-                        md_bg_color: (237/255, 237/255, 237/255, 1)
 
-                        MDTopAppBar:
-                            id: bottom_appbar
-                            type: "small"
-
-                            MDTopAppBarTrailingButtonContainer:
-
-                                MDActionTopAppBarButton:
-                                    icon: "account"
-                                    theme_bg_color: "Custom"
-                                    md_bg_color: (237/255, 237/255, 237/255, 1)
-                                    theme_icon_color: "Custom"
-                                    icon_color: (158/255, 0/255, 255/255, 1)
-                                    on_press: app.switch_screen("profile_screen")
-
-                        MDLabel:
-                            size_hint_y: None
-                            text: "RECOMMENDATIONS"
-                            halign: "left"
-                            theme_font_size: "Custom"
-                            font_size: "30sp"
-                            spacing: 30
-                            padding: 15
-
-                        MDBoxLayout:
-                            md_bg_color: (237/255, 237/255, 237/255, 1)
-                            padding: 20
-
-                            MDScrollView:
-                                MDList:
-                                    id: home_recommendations_list
-
-                        MDBoxLayout:
-                            size_hint_y: None
-                            height: "2dp"
-                            md_bg_color: 0, 0, 0, 1
-
-                BaseScreen:
+                FavoritesScreen:
                     name: "favorites_screen"
-                    MDBoxLayout:
-                        orientation: "vertical"
-                        md_bg_color: (237/255, 237/255, 237/255, 1)
 
-                        MDTopAppBar:
-                            id: bottom_appbar
-                            type: "small"
-
-                            MDTopAppBarTrailingButtonContainer:
-
-                                MDActionTopAppBarButton:
-                                    icon: "account"
-                                    theme_bg_color: "Custom"
-                                    md_bg_color: (237/255, 237/255, 237/255, 1)
-                                    theme_icon_color: "Custom"
-                                    icon_color: (158/255, 0/255, 255/255, 1)
-                                    on_press: app.switch_screen("profile_screen")
-
-                        MDLabel:
-                            size_hint_y: None
-                            text: "FAVORITES"
-                            halign: "left"
-                            theme_font_size: "Custom"
-                            font_size: "30sp"
-                            spacing: 30
-                            padding: 15
-
-                        MDBoxLayout:
-                            padding: 20
-                            orientation: "vertical"
-                            md_bg_color: (237/255, 237/255, 237/255, 1)
-
-                            MDScrollView:
-                                MDList:
-                                    id: favorites_container
-                                    spacing: 10
-
-                        MDBoxLayout:
-                            size_hint_y: None
-                            height: "2dp"
-                            md_bg_color: 0, 0, 0, 1
-
-                BaseScreen:
+                SearchScreen:
                     name: "search_screen"
-                    MDBoxLayout:
-                        orientation: "vertical"
-                        md_bg_color: (237/255, 237/255, 237/255, 1)
 
-                        MDTopAppBar:
-                            id: bottom_appbar
-                            type: "small"
-
-                            MDTopAppBarTrailingButtonContainer:
-
-                                MDActionTopAppBarButton:
-                                    icon: "account"
-                                    theme_bg_color: "Custom"
-                                    md_bg_color: (237/255, 237/255, 237/255, 1)
-                                    theme_icon_color: "Custom"
-                                    icon_color: (158/255, 0/255, 255/255, 1)
-                                    on_press: app.switch_screen("profile_screen")
-
-                        MDLabel:
-                            size_hint_y: None
-                            text: "SEARCH"
-                            halign: "left"
-                            theme_font_size: "Custom"
-                            font_size: "30sp"
-                            spacing: 30
-                            padding: 15
-
-                        MDBoxLayout:
-                            padding: 20
-                            orientation: "vertical"
-                            md_bg_color: (237/255, 237/255, 237/255, 1)
-
-                            MDScrollView:
-                                MDList:
-                                    id: container
-                                    spacing: 10
-
-                        MDBoxLayout:
-                            size_hint_y: None
-                            height: "2dp"
-                            md_bg_color: 0, 0, 0, 1
-
-                BaseScreen:
+                CategoriesScreen:
                     name: "categories_screen"
-                    MDBoxLayout:
-                        orientation: "vertical"
-                        md_bg_color: (237/255, 237/255, 237/255, 1)
-
-                        MDTopAppBar:
-                            id: bottom_appbar
-                            type: "small"
-
-                            MDTopAppBarTrailingButtonContainer:
-
-                                MDActionTopAppBarButton:
-                                    icon: "account"
-                                    theme_bg_color: "Custom"
-                                    md_bg_color: (237/255, 237/255, 237/255, 1)
-                                    theme_icon_color: "Custom"
-                                    icon_color: (158/255, 0/255, 255/255, 1)
-                                    on_press: app.switch_screen("profile_screen")
-
-                        MDLabel:
-                            size_hint_y: None
-                            text: "CATEGORIES"
-                            halign: "left"
-                            theme_font_size: "Custom"
-                            font_size: "30sp"
-                            spacing: 30
-                            padding: 15
-
-# CATEGORIES BUTTONS - CREATE S FUCKING SCREEN ON EACH SHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-                        MDBoxLayout:
-                            orientation: 'vertical'
-                            spacing: 20
-                            padding: 50
-
-
-                            MDButton:
-                                style: "filled"
-                                pos_hint: {"center_x": .5, "center_y": .5}
-                                theme_width: "Custom"
-                                height: "40dp"
-                                size_hint_x: None
-                                width: 300
-                                theme_bg_color: "Custom"
-                                md_bg_color: "brown"
-                                on_press: app.switch_screen("information_technology_screen")
-
-
-                                MDButtonText:
-                                    text: "Information Technology"
-                                    pos_hint: {"center_x": .5, "center_y": .5}
-
-
-                            MDButton:
-                                style: "filled"
-                                pos_hint: {"center_x": .5, "center_y": .5}
-                                theme_width: "Custom"
-                                height: "40dp"
-                                size_hint_x: None
-                                width: 300
-                                theme_bg_color: "Custom"
-                                md_bg_color: "brown"
-                                on_press: app.switch_screen("hospitality_management_screen")
-
-
-                                MDButtonText:
-                                    text: "Hospitality Management"
-                                    pos_hint: {"center_x": .5, "center_y": .5}
-
-
-                            MDButton:
-                                style: "filled"
-                                pos_hint: {"center_x": .5, "center_y": .5}
-                                theme_width: "Custom"
-                                height: "40dp"
-                                size_hint_x: None
-                                width: 300
-                                theme_bg_color: "Custom"
-                                md_bg_color: "brown"
-                                on_press: app.switch_screen("computer_engineering_screen")
-
-
-                                MDButtonText:
-                                    text: "Computer Engineering"
-                                    pos_hint: {"center_x": .5, "center_y": .5}
-
-                            MDButton:
-                                style: "filled"
-                                pos_hint: {"center_x": .5, "center_y": .5}
-                                theme_width: "Custom"
-                                height: "40dp"
-                                size_hint_x: None
-                                width: 300
-                                theme_bg_color: "Custom"
-                                md_bg_color: "brown"
-                                on_press: app.switch_screen("office_administration_screen")
-
-
-                                MDButtonText:
-                                    text: "Office Administration"
-                                    pos_hint: {"center_x": .5, "center_y": .5}
-
-
-                            MDButton:
-                                style: "filled"
-                                pos_hint: {"center_x": .5, "center_y": .5}
-                                theme_width: "Custom"
-                                height: "40dp"
-                                size_hint_x: None
-                                width: 300
-                                theme_bg_color: "Custom"
-                                md_bg_color: "brown"
-                                on_press: app.switch_screen("physical_education_screen")
-
-
-                                MDButtonText:
-                                    text: "Physical Education"
-                                    pos_hint: {"center_x": .5, "center_y": .5}
-
-
-
-                        Widget:
-                            size_hint_y: None
-                            height: 60
-
-
-                        MDBoxLayout:
-                            size_hint_y: None
-                            height: "2dp"
-                            md_bg_color: 0, 0, 0, 1
-
-
 
             MDNavigationBar:
                 on_switch_tabs: app.on_switch_tabs(*args)
@@ -351,6 +105,7 @@ MDScreenManager:
                     icon: "book-open-variant-outline"
                     text: "Categories"
 
+
 # BaseMDNavigationItem Template
 <BaseMDNavigationItem>:
     MDNavigationItemIcon:
@@ -358,6 +113,255 @@ MDScreenManager:
 
     MDNavigationItemLabel:
         text: root.text
+
+<HomeScreen>:
+    on_pre_enter: app.load_recommended_books()
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTitle:
+                text: "Recommendations"
+
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color: (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+                    on_press: app.switch_screen("profile_screen")
+
+
+
+        MDBoxLayout:
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+            padding: 20
+
+            MDScrollView:
+                MDList:
+                    id: home_recommendations_list
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "2dp"
+            md_bg_color: 0, 0, 0, 1
+
+<FavoritesScreen>:
+    on_pre_enter: app.load_favorites()
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTitle:
+                text: "Favorites"
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color: (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+                    on_press: app.switch_screen("profile_screen")
+
+
+        #MDBoxLayout:
+            #padding: 20
+            #orientation: "vertical"
+            #md_bg_color: (237/255, 237/255, 237/255, 1)
+
+        MDScrollView:
+            MDList:
+                size_hint_y: 1  # make sure it's not zero height
+                id: favorites_container
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 10
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "2dp"
+            md_bg_color: 0, 0, 0, 1
+
+<SearchScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTitle:
+                text: "Search Books"
+
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color: (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+                    on_press: app.switch_screen("profile_screen")
+
+
+
+        MDBoxLayout:
+            padding: 20
+            orientation: "vertical"
+            md_bg_color: (237/255, 237/255, 237/255, 1)
+
+            MDScrollView:
+                MDList:
+                    id: container
+                    spacing: 10
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "2dp"
+            md_bg_color: 0, 0, 0, 1
+
+
+<CategoriesScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: (237/255, 237/255, 237/255, 1)
+
+        MDTopAppBar:
+            id: bottom_appbar
+            type: "small"
+
+            MDTopAppBarTitle:
+                text: "Categories"
+
+
+            MDTopAppBarTrailingButtonContainer:
+
+                MDActionTopAppBarButton:
+                    icon: "account"
+                    theme_bg_color: "Custom"
+                    md_bg_color: (237/255, 237/255, 237/255, 1)
+                    theme_icon_color: "Custom"
+                    icon_color: (158/255, 0/255, 255/255, 1)
+                    on_press: app.switch_screen("profile_screen")
+
+
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            padding: 50
+
+
+            MDButton:
+                style: "filled"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: None
+                width: 300
+                theme_bg_color: "Custom"
+                md_bg_color: "brown"
+                on_press: app.switch_screen("information_technology_screen")
+
+
+                MDButtonText:
+                    text: "Information Technology"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+
+            MDButton:
+                style: "filled"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: None
+                width: 300
+                theme_bg_color: "Custom"
+                md_bg_color: "brown"
+                on_press: app.switch_screen("hospitality_management_screen")
+
+
+                MDButtonText:
+                    text: "Hospitality Management"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+
+            MDButton:
+                style: "filled"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: None
+                width: 300
+                theme_bg_color: "Custom"
+                md_bg_color: "brown"
+                on_press: app.switch_screen("computer_engineering_screen")
+
+
+                MDButtonText:
+                    text: "Computer Engineering"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDButton:
+                style: "filled"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: None
+                width: 300
+                theme_bg_color: "Custom"
+                md_bg_color: "brown"
+                on_press: app.switch_screen("office_administration_screen")
+
+
+                MDButtonText:
+                    text: "Office Administration"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+
+            MDButton:
+                style: "filled"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                theme_width: "Custom"
+                height: "40dp"
+                size_hint_x: None
+                width: 300
+                theme_bg_color: "Custom"
+                md_bg_color: "brown"
+                on_press: app.switch_screen("physical_education_screen")
+
+
+                MDButtonText:
+                    text: "Physical Education"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+
+
+        Widget:
+            size_hint_y: None
+            height: 60
+
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "2dp"
+            md_bg_color: 0, 0, 0, 1
+
 
 # LoginScreen UI
 <LoginScreen>:
@@ -653,6 +657,11 @@ MDScreenManager:
             id: bottom_appbar
             type: "small"
 
+
+            MDTopAppBarTitle:
+                text: "Profile"
+                elevation: 5
+
             MDTopAppBarTrailingButtonContainer:
 
                 MDActionTopAppBarButton:
@@ -663,14 +672,7 @@ MDScreenManager:
                     icon_color: (158/255, 0/255, 255/255, 1)
                     on_press: app.switch_screen("profile_screen")
 
-        MDLabel:
-            size_hint_y: None
-            text: "PROFILE"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
+
 
         MDBoxLayout:
             orientation: 'vertical'
@@ -695,21 +697,6 @@ MDScreenManager:
                     text: "View borrowed books"
                     pos_hint: {"center_x": .5, "center_y": .5}
 
-            MDButton:
-                style: "filled"
-                pos_hint: {"center_x": .5, "center_y": .5}
-                theme_width: "Custom"
-                height: "40dp"
-                size_hint_x: None
-                width: 300
-                theme_bg_color: "Custom"
-                md_bg_color: "brown"
-                on_press: root.manager.current = "return_books_screen"
-                #padding: 10
-
-                MDButtonText:
-                    text: "Return books"
-                    pos_hint: {"center_x": .5, "center_y": .5}
 
             MDButton:
                 style: "filled"
@@ -764,7 +751,7 @@ MDScreenManager:
 
         Widget:
             size_hint_y: None
-            height: 80
+            height: 140
 
 
 
@@ -776,21 +763,11 @@ MDScreenManager:
 
 
 
-        #MDLabel:
-            #size_hint_y: None
-            #text: "Lists of Books"
-            #halign: "left"
-            #theme_font_size: "Custom"
-            #font_size: "45sp"
-            #spacing: 30
-            #padding: 15
 
-
-
-        #MDTopAppBar:
-            #MDTopAppBarTitle:
-                #text: "Library Books"
-                #elevation: 5
+        MDTopAppBar:
+            MDTopAppBarTitle:
+                text: "List of Books"
+                elevation: 5
 
         # Fixed Header Row
 
@@ -849,26 +826,23 @@ MDScreenManager:
 
 
 <ViewBorrowedScreen>:
+    on_pre_enter: app.load_student_borrowed_books()
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: (237/255, 237/255, 237/255, 1)
 
 
 
-        MDLabel:
-            size_hint_y: None
-            text: "Borrowed Books"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
+        MDTopAppBar:
+            MDTopAppBarTitle:
+                text: "Borrowed Books"
+                elevation: 5
 
 
         MDScrollView:
             MDList:
                 spacing: 20
-                id: table_container  #  add rows dynamically
+                id: student_borrowed_books_list  #  add rows dynamically
 
 
         MDBoxLayout:
@@ -895,43 +869,6 @@ MDScreenManager:
 
 
 
-<ReturnBooksScreen>:
-    MDBoxLayout:
-        orientation: "vertical"
-        md_bg_color: (237/255, 237/255, 237/255, 1)
-
-
-
-        MDLabel:
-            size_hint_y: None
-            text: "Return Books"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
-
-        MDBoxLayout:
-            orientation: 'vertical'
-            spacing: 20
-            padding: 50
-
-
-            MDButton:
-                style: "filled"
-                pos_hint: {"center_x": .5, "center_y": .5}
-                theme_width: "Custom"
-                height: "40dp"
-                size_hint_x: None
-                width: 300
-                theme_bg_color: "Custom"
-                md_bg_color: "brown"
-                on_press: root.manager.current = "profile_screen"
-
-
-                MDButtonText:
-                    text: "Back"
-                    pos_hint: {"center_x": .5, "center_y": .5}
 
 
 
@@ -943,14 +880,10 @@ MDScreenManager:
 
 
 
-        MDLabel:
-            size_hint_y: None
-            text: "Penalty"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
+        MDTopAppBar:
+            MDTopAppBarTitle:
+                text: "Penalty"
+                elevation: 5
 
 
         MDBoxLayout:
@@ -1301,25 +1234,22 @@ MDScreenManager:
 
 
 <BorrowRequestScreen>:
-    #on_pre_enter: app.load_physical_education_books()
+    on_pre_enter: app.load_borrow_requests()
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: (237/255, 237/255, 237/255, 1)
-        padding: [5,10]
+        #padding: [5,10]
 
-        MDLabel:
-            size_hint_y: None
-            height: 20
-            text: "Borrow Request"
-            halign: "left"
-            #theme_text_color: "Custom"
-            #text_color: "violet"
-            theme_font_size: "Custom"
-            font_size: "25sp"
+        MDTopAppBar:
+            type: "small"
+            md_bg_color: "red"
+            MDTopAppBarTitle:
+                text: "Borrow Request"
+
         MDScrollView:
             MDList:
                 spacing: 20
-                id: borrow_request_list # this is where we will add rows dynamically
+                id: borrow_requests_container # this is where we will add rows dynamically
 
         MDBoxLayout:
             orientation: 'vertical'
@@ -1348,25 +1278,23 @@ MDScreenManager:
 
 
 <ReturnRequestScreen>:
-    #on_pre_enter: app.load_physical_education_books()
+    on_pre_enter: app.load_return_requests()
+
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: (237/255, 237/255, 237/255, 1)
-        padding: [5,10]
+        #padding: [5,10]
 
-        MDLabel:
-            size_hint_y: None
-            height: 20
-            text: "Return Request"
-            halign: "left"
-            #theme_text_color: "Custom"
-            #text_color: "violet"
-            theme_font_size: "Custom"
-            font_size: "25sp"
+        MDTopAppBar:
+            type: "small"
+            md_bg_color: "red"
+            MDTopAppBarTitle:
+                text: "Return Request"
+
         MDScrollView:
             MDList:
                 spacing: 20
-                id: return_request_list # this is where we will add rows dynamically
+                id: return_requests_container # this is where we will add rows dynamically
 
         MDBoxLayout:
             orientation: 'vertical'
@@ -1399,14 +1327,11 @@ MDScreenManager:
         orientation: "vertical"
         md_bg_color: (237/255, 237/255, 237/255, 1)
 
-        MDLabel:
-            size_hint_y: None
-            text: "Librarian Dashboard"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
+        MDTopAppBar:
+            type: "small"
+            md_bg_color: "red"
+            MDTopAppBarTitle:
+                text: "Librarian Dashboard"
 
         MDBoxLayout:
             orientation: 'vertical'
@@ -1525,26 +1450,24 @@ MDScreenManager:
 
 
 <ViewBorrowedLibrarianScreen>:
+    on_pre_enter: app.load_borrowed_books()
     MDBoxLayout:
         orientation: "vertical"
         md_bg_color: (237/255, 237/255, 237/255, 1)
 
 
 
-        MDLabel:
-            size_hint_y: None
-            text: "Borrowed Books"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
+        MDTopAppBar:
+            type: "small"
+            md_bg_color: "red"
+            MDTopAppBarTitle:
+                text: "Borrowed Books"
 
 
         MDScrollView:
             MDList:
                 spacing: 20
-                id: librarian_borrowed_container  #  add rows dynamically
+                id: borrowed_books_list  #  add rows dynamically
 
 
         MDBoxLayout:
@@ -1575,15 +1498,12 @@ MDScreenManager:
         md_bg_color: (237/255, 237/255, 237/255, 1)
 
 
+        MDTopAppBar:
+            type: "small"
+            md_bg_color: "red"
+            MDTopAppBarTitle:
+                text: "Penalty"
 
-        MDLabel:
-            size_hint_y: None
-            text: "Penalty"
-            halign: "left"
-            theme_font_size: "Custom"
-            font_size: "45sp"
-            spacing: 30
-            padding: 15
 
 
         MDBoxLayout:
