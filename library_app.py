@@ -18,8 +18,8 @@ from kivymd.uix.dialog import MDDialog, MDDialogButtonContainer, MDDialogSupport
 from kivymd.uix.button import MDButton, MDButtonText, MDButtonIcon, MDIconButton
 import random
 from datetime import datetime
-
-
+from kivy.uix.image import Image
+from kivymd.uix.card import MDCard
 conn = sqlite3.connect("library.db")
 cursor = conn.cursor()
 
@@ -106,6 +106,12 @@ CREATE TABLE IF NOT EXISTS Librarians (
 """)
 # Insert default librarian credentials
 try:
+    cursor.execute("""
+       INSERT INTO Librarians (name, password)
+       VALUES (?, ?)
+       ON CONFLICT(password) DO NOTHING
+       """, ('C', '1'))
+
     cursor.execute("""
     INSERT INTO Librarians (name, password)
     VALUES (?, ?)
@@ -417,7 +423,10 @@ class AnoWalangTutulong(MDApp):
         target_screen = screen_map.get(item_text)
         if target_screen:
             self.root.ids.screen_manager.current = target_screen
-
+            if target_screen == "favorites_screen":
+                self.load_favorites()
+            elif target_screen == "home_screen":
+                self.load_recommended_books()
 
     def switch_screen(self, screen_name):
         self.root.current = screen_name
@@ -429,6 +438,14 @@ class AnoWalangTutulong(MDApp):
         home_screen = self.root.get_screen("home_screen")
         container = home_screen.ids.home_recommendations_list
         container.clear_widgets()
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
 
         try:
 
@@ -444,16 +461,7 @@ class AnoWalangTutulong(MDApp):
 
                 for cat in categories:
                     category = cat[0]
-
-                    # Add category label
-                    container.add_widget(MDLabel(
-                        text=f"[b]{category} (Top 3)[/b]",
-                        markup=True,
-                        #font_style="H6",
-                        size_hint_y=None,
-                        height="40dp"
-                    ))
-
+                    image_source = category_images.get(category, "images/default_book.png")
                     # Fetch 3 random books from this category
                     cursor.execute("SELECT id, title, author, availability FROM books WHERE category = ?", (category,))
                     all_books = cursor.fetchall()
@@ -461,18 +469,76 @@ class AnoWalangTutulong(MDApp):
                     selected_books = random.sample(all_books, min(3, len(all_books)))
 
                     for book_id, title, author, availability in selected_books:
-                        item = MDListItem()
+                        card = MDCard(
+                            orientation="horizontal",
+                            size_hint_y=None,
+                            height="160dp",
+                            padding=10,
+                            style="elevated",
+                            ripple_behavior=True,
+                            theme_shadow_color="Custom",
+                            shadow_color="white",
+                            theme_bg_color="Custom",
+                            theme_elevation_level="Custom",
+                            elevation_level=2,
+                            md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
+                        )
 
-                        item.add_widget(MDListItemLeadingIcon(icon="book"))
-                        item.add_widget(MDListItemHeadlineText(text=f"{title} | {book_id}"))
-                        item.add_widget(MDListItemSupportingText(text=author))
-                        item.add_widget(MDListItemTertiaryText(text=f"{availability}"))
+                        image = Image(
+                            source=image_source,
+                            size_hint_x=None,
+                            width="100dp",
+                            allow_stretch=True,
+                            keep_ratio=True
+                        )
 
-                        # Optional: Add action buttons
-                        item.add_widget(MDListItemTrailingIcon(icon="heart-outline"))
-                        item.add_widget(MDListItemTrailingIcon(icon="book-clock"))
+                        text_box = MDBoxLayout(
+                            orientation="vertical",
+                            spacing=5,
+                            padding=(10, 0),
+                        )
 
-                        container.add_widget(item)
+                        title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom",
+                                              text_color=(1, 1, 1, 1))
+                        author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom",
+                                               text_color=(1, 1, 1, 1))
+                        info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                             text_color=(1, 1, 1, 1))
+
+                        icon_row = MDBoxLayout(
+                            orientation="horizontal",
+                            spacing=5,
+                            size_hint_y=None,
+                            height="30dp"
+                        )
+
+                        favorite_button = MDIconButton(
+                            icon="heart-outline",
+                            theme_icon_color="Custom",
+                            icon_color=(1, 0, 0.5, 1),
+                            on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                        )
+                        icon_row.add_widget(favorite_button)
+
+                        borrow_button_request = MDIconButton(
+                            icon="book-open-page-variant",
+                            theme_icon_color="Custom",
+                            icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
+                            on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                        )
+                        if availability.lower() != "available":
+                            borrow_button_request.disabled = True
+                        icon_row.add_widget(borrow_button_request)
+
+                        text_box.add_widget(title_label)
+                        text_box.add_widget(author_label)
+                        text_box.add_widget(info_label)
+                        text_box.add_widget(icon_row)
+
+                        card.add_widget(image)
+                        card.add_widget(text_box)
+
+                        container.add_widget(card)
 
                 conn.close()
             else:
@@ -507,54 +573,79 @@ class AnoWalangTutulong(MDApp):
         books = cursor.fetchall()
         conn.close()
 
-        from kivymd.uix.list import (
-            MDListItem, MDListItemLeadingIcon, MDListItemHeadlineText,
-            MDListItemSupportingText, MDListItemTertiaryText
-        )
-        from kivymd.uix.card import MDCard
+
 
         for book in books:
             book_id, title, author, category, availability = book
 
-            it_item = MDListItem()
-            it_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            it_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            it_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            it_item.add_widget(MDListItemTertiaryText(text=f"Availability: {availability}"))
-
-            # Trailing Buttons Container (RIGHT SIDE)
-            trailing_buttons = MDBoxLayout(
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",  # adjust spacing of icons
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
             )
 
+            image = Image(
+                source="book_images/cpe.jfif",
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
 
-            # Favorite Button
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
             favorite_button = MDIconButton(
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
                 on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
             )
-            trailing_buttons.add_widget(favorite_button)
+            icon_row.add_widget(favorite_button)
 
-            # Borrow Button
             borrow_button_request = MDIconButton(
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
-                icon_color=(0, 0.5, 1, 1),
+                icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
                 on_release=lambda x, bid=book_id: self.borrow_book(bid)
             )
-            trailing_buttons.add_widget(borrow_button_request)
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
+            icon_row.add_widget(borrow_button_request)
 
-            # Add trailing_buttons to MDListItem (RIGHT SIDE EFFECT)
-            it_item.add_widget(trailing_buttons)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            container.add_widget(it_item)
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
 
 
     # For Hospitality Management Screen
@@ -575,46 +666,74 @@ class AnoWalangTutulong(MDApp):
         for book in books:
             book_id, title, author, category, availability = book
 
-            hm_item = MDListItem()
-            hm_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            hm_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            hm_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            hm_item.add_widget(MDListItemTertiaryText(text=f"Availability: {availability}"))
-
-            # Trailing Buttons Container (RIGHT SIDE)
-            trailing_buttons = MDBoxLayout(
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
             )
 
+            image = Image(
+                source="book_images/hm.jpeg",
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
 
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
 
-            # Favorite Button
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
             favorite_button = MDIconButton(
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
                 on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
             )
-            trailing_buttons.add_widget(favorite_button)
+            icon_row.add_widget(favorite_button)
 
-            # Borrow Button
             borrow_button_request = MDIconButton(
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
-                icon_color=(0, 0.5, 1, 1),
+                icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
                 on_release=lambda x, bid=book_id: self.borrow_book(bid)
             )
-            trailing_buttons.add_widget(borrow_button_request)
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
+            icon_row.add_widget(borrow_button_request)
 
-            # Add trailing_buttons to MDListItem
-            hm_item.add_widget(trailing_buttons)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            container.add_widget(hm_item)
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
 
     # For Computer Engineering Screen
     def load_computer_engineering_books(self):
@@ -633,46 +752,74 @@ class AnoWalangTutulong(MDApp):
         for book in books:
             book_id, title, author, category, availability = book
 
-            cpe_item = MDListItem()
-            cpe_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            cpe_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            cpe_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            cpe_item.add_widget(MDListItemTertiaryText(text=f"Availability: {availability}"))
-
-            # Trailing Buttons Container
-            trailing_buttons = MDBoxLayout(
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
             )
 
-            # Favorite Button
+            image = Image(
+                source="book_images/it.jfif",
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
             favorite_button = MDIconButton(
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
                 on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
             )
-            trailing_buttons.add_widget(favorite_button)
+            icon_row.add_widget(favorite_button)
 
-            # Borrow Button
             borrow_button_request = MDIconButton(
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
-                icon_color=(0, 0.5, 1, 1),
+                icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
                 on_release=lambda x, bid=book_id: self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
+            icon_row.add_widget(borrow_button_request)
 
-            trailing_buttons.add_widget(borrow_button_request)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            # Add trailing_buttons to MDListItem
-            cpe_item.add_widget(trailing_buttons)
+            card.add_widget(image)
+            card.add_widget(text_box)
 
-            container.add_widget(cpe_item)
-
+            container.add_widget(card)
     # For Office Administration Screen
     def load_office_administration_books(self):
         screen = self.root.get_screen('office_administration_screen')
@@ -690,45 +837,74 @@ class AnoWalangTutulong(MDApp):
         for book in books:
             book_id, title, author, category, availability = book
 
-            oa_item = MDListItem()
-            oa_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            oa_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            oa_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            oa_item.add_widget(MDListItemTertiaryText(text=f"Availability: {availability}"))
-
-            # Trailing Buttons Container
-            trailing_buttons = MDBoxLayout(
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
             )
 
-            # Favorite Button
+            image = Image(
+                source="book_images/oa.jfif",
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
             favorite_button = MDIconButton(
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
                 on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
             )
-            trailing_buttons.add_widget(favorite_button)
+            icon_row.add_widget(favorite_button)
 
-            # Borrow Button
             borrow_button_request = MDIconButton(
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
-                icon_color=(0, 0.5, 1, 1),
+                icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
                 on_release=lambda x, bid=book_id: self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
+            icon_row.add_widget(borrow_button_request)
 
-            trailing_buttons.add_widget(borrow_button_request)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            # Add trailing_buttons to MDListItem
-            oa_item.add_widget(trailing_buttons)
+            card.add_widget(image)
+            card.add_widget(text_box)
 
-            container.add_widget(oa_item)
+            container.add_widget(card)
 
     # Physical Education Screen
     def load_physical_education_books(self):
@@ -747,49 +923,79 @@ class AnoWalangTutulong(MDApp):
         for book in books:
             book_id, title, author, category, availability = book
 
-            pe_item = MDListItem()
-            pe_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            pe_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            pe_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            pe_item.add_widget(MDListItemTertiaryText(text=f"Availability: {availability}"))
-
-            # Trailing Buttons Container (RIGHT SIDE)
-            trailing_buttons = MDBoxLayout(
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",  # adjust spacing of icons
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
             )
 
 
-            # Favorite Button
+            image = Image(
+                source="book_images/pe.jpeg",
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
+
             favorite_button = MDIconButton(
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
                 on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
             )
-            trailing_buttons.add_widget(favorite_button)
+            icon_row.add_widget(favorite_button)
 
-
-
-            # Borrow Button
             borrow_button_request = MDIconButton(
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
-                icon_color=(0, 0.5, 1, 1),
+                icon_color=(20/255, 95/255, 245/255, 1),
                 on_release=lambda x, bid=book_id: self.borrow_book(bid)
             )
-
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
+            icon_row.add_widget(borrow_button_request)
 
-            trailing_buttons.add_widget(borrow_button_request)
 
-            # Add trailing_buttons to MDListItem
-            pe_item.add_widget(trailing_buttons)
 
-            container.add_widget(pe_item)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
+
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
+
 
 
 
@@ -799,6 +1005,14 @@ class AnoWalangTutulong(MDApp):
         container = screen.ids.table_container
         container.clear_widgets()
 
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
         conn = sqlite3.connect('library.db')
         cursor = conn.cursor()
         cursor.execute("SELECT id, title, author, category, availability FROM books")
@@ -807,37 +1021,98 @@ class AnoWalangTutulong(MDApp):
 
         for row in rows:
             book_id, title, author, category, availability = row
-
-            list_item = MDListItem()
-
-
-            list_item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-
-            list_item.add_widget(MDListItemHeadlineText(text=f"Title:  {title} | Book ID: {book_id}"))
-            list_item.add_widget(MDListItemSupportingText(text=f"Author:  {author}"))
-            list_item.add_widget(MDListItemTertiaryText(text=f"Category:  {category}     |     Availability:  {availability}"))
-
-            # Trailing Buttons Container (RIGHT SIDE)
-            trailing_buttons = MDBoxLayout(
+            image_source = category_images.get(category, "images/default_book.png")
+            card = MDCard(
                 orientation="horizontal",
-                size_hint_x=None,
-                width="120dp",  # adjust spacing of icons
-                spacing="5dp"
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color = "Custom",
+                shadow_color = "white",
+                theme_bg_color ="Custom",
+                theme_elevation_level = "Custom",
+                elevation_level = 2,
+                md_bg_color=(55/255, 68/255, 77/255, 1),  # dark card
             )
 
-            # Delete Button
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  Book: {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{category} | {availability}", font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
+
+
+            bookshelf_button = MDIconButton(
+                icon="star-outline",
+                theme_icon_color="Custom",
+                icon_color=(1, 0, 0, 1),
+                #on_release=lambda x, bid=book_id: self.delete_book(bid)
+            )
+            icon_row.add_widget(bookshelf_button)
+
+            check_button = MDIconButton(
+                icon="clock-outline",
+                theme_icon_color="Custom",
+                icon_color=(1, 0, 0, 1),
+                #on_release=lambda x, bid=book_id: self.delete_book(bid)
+            )
+            icon_row.add_widget(check_button)
+
+            clock_button = MDIconButton(
+                icon="check",
+                theme_icon_color="Custom",
+                icon_color=(1, 0, 0, 1),
+                #on_release=lambda x, bid=book_id: self.delete_book(bid)
+            )
+            icon_row.add_widget(clock_button)
+
+            star_outline_button = MDIconButton(
+                icon="bookshelf",
+                theme_icon_color="Custom",
+                icon_color=(1, 0, 0, 1),
+                #on_release=lambda x, bid=book_id: self.delete_book(bid)
+            )
+            icon_row.add_widget(star_outline_button)
+
             delete_button = MDIconButton(
                 icon="trash-can-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0, 1),
                 on_release=lambda x, bid=book_id: self.delete_book(bid)
             )
-            trailing_buttons.add_widget(delete_button)
+            icon_row.add_widget(delete_button)
 
-            # # Add trailing_buttons to MDListItem
-            list_item.add_widget(trailing_buttons)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            container.add_widget(list_item)
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
 
     def insert_books_from_data(self):
         # Insert database
@@ -899,7 +1174,15 @@ class AnoWalangTutulong(MDApp):
             favorites_screen = self.root.get_screen("favorites_screen")
             container = favorites_screen.ids.favorites_container
             container.clear_widgets()
-
+            category_images = {
+                "Information Technology": "book_images/cpe.jfif",
+                "Hospitality Management": "book_images/hm.jpeg",
+                "Computer Engineering": "book_images/it.jfif",
+                "Office Administration": "book_images/oa.jfif",
+                "PE": "book_images/pe.jpeg"
+            }
+            print(f"Container height: {container.height}")
+            print(f"Children count: {len(container.children)}")
             student_number = getattr(self, "logged_in_student_number", None)
             print(" Logged in student number:", student_number)
 
@@ -918,14 +1201,51 @@ class AnoWalangTutulong(MDApp):
             conn.close()
 
             for book_id, title, author, category in favorites:
+                image_source = category_images.get(category, "images/default_book.png")
                 print(f" Adding favorite: {title} | {book_id}")
-                item = MDListItem(size_hint_y=None, height="100dp")
-                item.add_widget(MDListItemLeadingIcon(icon="book"))
-                item.add_widget(MDListItemHeadlineText(text=f"{title} | ID: {book_id}"))
-                item.add_widget(MDListItemSupportingText(text=f"Author: {author}"))
-                item.add_widget(MDListItemTertiaryText(text=f"Category: {category}"))
+                card = MDCard(
+                    orientation="horizontal",
+                    size_hint_y=None,
+                    height="160dp",
+                    padding=10,
+                    style="elevated",
+                    ripple_behavior=True,
+                    theme_shadow_color="Custom",
+                    shadow_color="white",
+                    theme_bg_color="Custom",
+                    theme_elevation_level="Custom",
+                    elevation_level=2,
+                    md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),
+                )
 
-                container.add_widget(item)
+                image = Image(
+                    source=image_source,
+                    size_hint_x=None,
+                    width="100dp",
+                    allow_stretch=True,
+                    keep_ratio=True
+                )
+
+                text_box = MDBoxLayout(
+                    orientation="vertical",
+                    spacing=5,
+                    padding=(10, 0),
+                )
+
+                title_label = MDLabel(text=f"{title}  |  {book_id}", font_style="Title", theme_text_color="Custom",
+                                      text_color=(1, 1, 1, 1))
+                author_label = MDLabel(text=f"{author}", theme_text_color="Custom",
+                                       text_color=(1, 1, 1, 1))
+                info_label = MDLabel(text=f"{category}", font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+
+                text_box.add_widget(title_label)
+                text_box.add_widget(author_label)
+                text_box.add_widget(info_label)
+                card.add_widget(image)
+                card.add_widget(text_box)
+
+                container.add_widget(card)
+
 
         except Exception as e:
             print(f" Error loading favorites: {e}")
@@ -979,6 +1299,14 @@ class AnoWalangTutulong(MDApp):
         container = screen.ids.return_requests_container
         container.clear_widgets()
 
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
         cursor.execute("SELECT id, student_name, student_number, book_id, book_title, author, category, status, date_requested, date_approved FROM return_requests")
@@ -988,45 +1316,72 @@ class AnoWalangTutulong(MDApp):
 
         for req in requests:
             request_id, name, student_no, book_id, book_title, author,category, status, date_requested, date_approved  = req
+            image_source = category_images.get(category, "images/default_book.png")
 
-            list_item = MDListItem()
-            list_item.add_widget(MDListItemLeadingIcon(icon="account"))
-            list_item.add_widget(MDListItemHeadlineText(text=f"{name} | {student_no}"))
-            list_item.add_widget(MDListItemSupportingText(text=f"{book_title} by {author} | {category}"))
-            list_item.add_widget(MDListItemTertiaryText(text=f"Requested: {date_requested}  |  Status: {status}  |  Date approved: {date_approved}"))
+            card = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),
+            )
+
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=f"{name}  |  {student_no}", font_style="Title", theme_text_color="Custom",
+                                  text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{book_title} by {author}  |  {category}",  theme_text_color="Custom",
+                                   text_color=(1, 1, 1, 1))
+            info_label = MDLabel(
+                text=f"Requested: {date_requested}  |  Status: {status}  |  Date approved: {date_approved}",
+                font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
 
             if status == "Pending":
-                trailing_buttons = MDBoxLayout(
-                    orientation="horizontal",
-                    size_hint_x=None,
-                    width="120dp",  # adjust spacing of icons
-                    spacing="5dp"
-                )
-
-
-                # APPROVE BUTTON
-                approve_btn = MDIconButton(
+                action_box = MDBoxLayout(orientation="horizontal", spacing=5, size_hint_y=None, height="40dp")
+                accept_btn = MDIconButton(
                     icon="check",
                     theme_icon_color="Custom",
                     icon_color=(0, 0.8, 0, 1),
                     on_release=lambda x, rid=request_id: self.update_return_status(rid, "Approved")
                 )
-                trailing_buttons.add_widget(approve_btn)
-
-                # REJECT BUTTON
                 reject_btn = MDIconButton(
                     icon="close",
                     theme_icon_color="Custom",
                     icon_color=(1, 0, 0, 1),
                     on_release=lambda x, rid=request_id: self.update_return_status(rid, "Rejected")
                 )
-                trailing_buttons.add_widget(reject_btn)
+                action_box.add_widget(accept_btn)
+                action_box.add_widget(reject_btn)
+                text_box.add_widget(action_box)
 
-                list_item.add_widget(trailing_buttons)
+            card.add_widget(image)
+            card.add_widget(text_box)
 
-            container.add_widget(list_item)
-            #container.add_widget(approve_btn)
-            #container.add_widget(reject_btn)
+            container.add_widget(card)
+
 
     def update_return_status(self, request_id, new_status):
         date_approved = datetime.now().strftime("%Y-%m-%d (%H:%M:%S)")
@@ -1165,6 +1520,15 @@ class AnoWalangTutulong(MDApp):
         container = screen.ids.borrow_requests_container
         container.clear_widgets()
 
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
+
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -1184,14 +1548,47 @@ class AnoWalangTutulong(MDApp):
         for request in requests:
             rowid, student_name, student_number, book_id, book_title, book_author, category, status, date_requested, date_approved = request
 
-            item = MDListItem()
-            item.add_widget(MDListItemLeadingIcon(icon="account"))
-            item.add_widget(MDListItemHeadlineText(text=f"{student_name} | {student_number}"))
-            item.add_widget(MDListItemSupportingText(text=f"{book_title} by {book_author}  |  {category}"))
-            item.add_widget(MDListItemTertiaryText(text=f"Requested: {date_requested}  |  Status: {status}  |  Date approved: {date_approved}"))
+            image_source = category_images.get(category, "images/default_book.png")
 
-            # Only show buttons if not yet approved/rejected
+            card = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),
+            )
+
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=f"{student_name}  |  {student_number}", font_style="Title",theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{book_title} by {book_author}  |  {category}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"Requested: {date_requested}  |  {status}  |  Date approved: {date_approved}", font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+
             if status == "Pending":
+                action_box = MDBoxLayout(orientation="horizontal", spacing=5, size_hint_y=None, height="40dp")
                 accept_btn = MDIconButton(
                     icon="check",
                     theme_icon_color="Custom",
@@ -1204,10 +1601,14 @@ class AnoWalangTutulong(MDApp):
                     icon_color=(1, 0, 0, 1),
                     on_release=lambda x, r=rowid: self.update_borrow_status(r, "Rejected")
                 )
-                item.add_widget(accept_btn)
-                item.add_widget(reject_btn)
+                action_box.add_widget(accept_btn)
+                action_box.add_widget(reject_btn)
+                text_box.add_widget(action_box)
 
-            container.add_widget(item)
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
 
     def update_borrow_status(self, request_id, new_status):
         date_approved = datetime.now().strftime("%Y-%m-%d (%H:%M:%S)")
@@ -1257,6 +1658,14 @@ class AnoWalangTutulong(MDApp):
         container = screen.ids.student_borrowed_books_list
         container.clear_widgets()
 
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
         student_number = getattr(self, 'logged_in_student_number', None)
         if not student_number:
             self.show_generic_dialog("Login required.")
@@ -1273,24 +1682,70 @@ class AnoWalangTutulong(MDApp):
         conn.close()
 
         for book_id, title, author, category, date_borrowed, date_returned, return_status in borrowed_books:
-            item = MDListItem()
-            item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant"))
-            item.add_widget(MDListItemHeadlineText(text=f"{title}  |  {category}"))
-            item.add_widget(MDListItemSupportingText(text=f"Author: {author}  |  status: {return_status}"))
-            item.add_widget(MDListItemTertiaryText(text=f"Borrowed: {date_borrowed}  |  Returned: {date_returned}"))
 
-            #  Show Return Button only if not yet returned
+            image_source = category_images.get(category, "images/default_book.png")
+
+            card = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),  # dark card
+            )
+
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=f"{title} ", font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {category} |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"status: {return_status}  |  Borrowed: {date_borrowed}  |  Returned: {date_returned}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
             if return_status != "Returned":
                 return_btn = MDIconButton(
                     icon="book-arrow-left-outline",
                     theme_icon_color="Custom",
-                    icon_color=(0.8, 0.2, 0, 1),
-                    on_release=lambda x, bid=book_id, t=title, a=author, c=category: self.request_return_book(bid, t, a, c)
+                    icon_color=(1, 0, 0.5, 1),
+                    on_release=lambda x, bid=book_id, t=title, a=author, c=category: self.request_return_book(bid, t, a, c) )
+                icon_row.add_widget(return_btn)
 
-                )
-                item.add_widget(return_btn)
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
 
-            container.add_widget(item)
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
+
+
+
 
     # Librarian Dashboard
     def load_borrowed_books(self):
@@ -1298,33 +1753,71 @@ class AnoWalangTutulong(MDApp):
         container = screen.ids.borrowed_books_list
         container.clear_widgets()
 
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
+
         conn = sqlite3.connect("library.db")
         cursor = conn.cursor()
-        cursor.execute("""SELECT 
-        student_name,
-        student_number,
-        book_id,
-        book_title,
-        book_author,
-        category,
-        date_borrowed,
-        date_returned,
-        return_status FROM borrowed_books""")
+        cursor.execute("SELECT student_name, student_number, book_id, book_title, book_author, category, date_borrowed, date_returned, return_status FROM borrowed_books")
         rows = cursor.fetchall()
         conn.close()
 
-        for name, number, book_id, title, author, category, date_borrowed, date_returned, return_status  in rows:
-            item = MDListItem()
-            item.add_widget(MDListItemLeadingIcon(icon="book-open-page-variant-outline"))
-            item.add_widget(MDListItemHeadlineText(text=f"Student name: {name}  |  Student number: {number}"))
-            item.add_widget(MDListItemSupportingText(text=f"Title: {title}  |  Author: {author}  |  {category}"))
-            item.add_widget(MDListItemTertiaryText(text=f"Borrowed: {date_borrowed}  |  Status: {return_status}  |  Returned: {date_returned} "))
-            container.add_widget(item)
+        for name, number, book_id, title, author, category, date_borrowed, date_returned, return_status in rows:
+            image_source = category_images.get(category, "images/default_book.png")
 
+            card = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                ripple_behavior=True,
+                theme_shadow_color="Custom",
+                shadow_color="white",
+                theme_bg_color="Custom",
+                theme_elevation_level="Custom",
+                elevation_level=2,
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),
+            )
+
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=f"{name}  |  {number}", font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{title}  |  {author} |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"Borrowed: {date_borrowed}  |  status: {return_status}  |  Returned: {date_returned}", font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
 
     def build(self):
         self.insert_books_from_data()
         return Builder.load_file("library_app.kv")
+
+
 
 if __name__ == "__main__":
     AnoWalangTutulong().run()
