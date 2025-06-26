@@ -86,7 +86,8 @@ CREATE TABLE IF NOT EXISTS favorites (
     book_id INTEGER,
     title TEXT,
     author TEXT,
-    category TEXT
+    category TEXT,
+    availability TEXT
 )
 """)
 
@@ -435,9 +436,32 @@ class AnoWalangTutulong(MDApp):
     # Home screen book recommendations
     def load_recommended_books(self):
 
-        home_screen = self.root.get_screen("home_screen")
+        main_screen = self.root.get_screen('main_screen')
+
+        screen_manager = None
+        for child in main_screen.children:
+            if hasattr(child, 'children') and len(child.children) > 0:
+                for subchild in child.children:
+                    if hasattr(subchild, 'current'):
+                        screen_manager = subchild
+                        break
+            if screen_manager:
+                break
+
+        if not screen_manager:
+            print("Could not find screen manager")
+            return
+
+        print(f"Found screen manager: {screen_manager}")
+        print(f"Available screens: {[screen.name for screen in screen_manager.screens]}")
+
+        # Get favorites screen
+        home_screen = screen_manager.get_screen('home_screen')
         container = home_screen.ids.home_recommendations_list
+
+        # Clear existing widgets
         container.clear_widgets()
+
         category_images = {
             "Information Technology": "book_images/cpe.jfif",
             "Hospitality Management": "book_images/hm.jpeg",
@@ -462,6 +486,19 @@ class AnoWalangTutulong(MDApp):
                 for cat in categories:
                     category = cat[0]
                     image_source = category_images.get(category, "images/default_book.png")
+                    category_label = MDLabel(
+                        text=f"{category}",
+                        markup=True,
+                        font_style="Headline",
+                        size_hint_y=None,
+                        height="50dp",
+                        halign="left",
+                        theme_text_color="Custom",
+                        text_color=(1, 1, 1, 1),
+                        padding=(10, 10)
+                    )
+                    container.add_widget(category_label)
+
                     # Fetch 3 random books from this category
                     cursor.execute("SELECT id, title, author, availability FROM books WHERE category = ?", (category,))
                     all_books = cursor.fetchall()
@@ -516,7 +553,8 @@ class AnoWalangTutulong(MDApp):
                             icon="heart-outline",
                             theme_icon_color="Custom",
                             icon_color=(1, 0, 0.5, 1),
-                            on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                            on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                            self.add_to_favorites(bid, t, a, c, avail)
                         )
                         icon_row.add_widget(favorite_button)
 
@@ -524,7 +562,8 @@ class AnoWalangTutulong(MDApp):
                             icon="book-open-page-variant",
                             theme_icon_color="Custom",
                             icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
-                            on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                            on_release=lambda x, bid=book_id:
+                            self.borrow_book(bid)
                         )
                         if availability.lower() != "available":
                             borrow_button_request.disabled = True
@@ -623,7 +662,8 @@ class AnoWalangTutulong(MDApp):
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
-                on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
             )
             icon_row.add_widget(favorite_button)
 
@@ -631,7 +671,8 @@ class AnoWalangTutulong(MDApp):
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
                 icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
-                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                on_release=lambda x, bid=book_id:
+                self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
@@ -711,7 +752,8 @@ class AnoWalangTutulong(MDApp):
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
-                on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
             )
             icon_row.add_widget(favorite_button)
 
@@ -719,7 +761,8 @@ class AnoWalangTutulong(MDApp):
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
                 icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
-                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                on_release=lambda x, bid=book_id:
+                self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
@@ -797,7 +840,8 @@ class AnoWalangTutulong(MDApp):
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
-                on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
             )
             icon_row.add_widget(favorite_button)
 
@@ -805,7 +849,8 @@ class AnoWalangTutulong(MDApp):
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
                 icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
-                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                on_release=lambda x, bid=book_id:
+                self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
@@ -882,7 +927,8 @@ class AnoWalangTutulong(MDApp):
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
-                on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
             )
             icon_row.add_widget(favorite_button)
 
@@ -890,7 +936,8 @@ class AnoWalangTutulong(MDApp):
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
                 icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
-                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                on_release=lambda x, bid=book_id:
+                self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
@@ -970,7 +1017,8 @@ class AnoWalangTutulong(MDApp):
                 icon="heart-outline",
                 theme_icon_color="Custom",
                 icon_color=(1, 0, 0.5, 1),
-                on_release=lambda x, bid=book_id: self.add_to_favorites(bid, title, author, category)
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
             )
             icon_row.add_widget(favorite_button)
 
@@ -978,7 +1026,8 @@ class AnoWalangTutulong(MDApp):
                 icon="book-open-page-variant",
                 theme_icon_color="Custom",
                 icon_color=(20/255, 95/255, 245/255, 1),
-                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+                on_release=lambda x, bid=book_id:
+                self.borrow_book(bid)
             )
             if availability.lower() != "available":
                 borrow_button_request.disabled = True
@@ -1143,7 +1192,16 @@ class AnoWalangTutulong(MDApp):
         # Refresh table
         self.load_books()
 
-    def add_to_favorites(self, book_id, title, author, category):
+    def delete_from_favorites(self, book_id):
+        student_number = getattr(self, 'logged_in_student_number', None)
+        conn = sqlite3.connect('library.db')
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM favorites WHERE student_number=? AND book_id=? ", (student_number,book_id,))
+        conn.commit()
+        conn.close()
+        self.load_favorites()
+
+    def add_to_favorites(self, book_id, title, author, category, availability):
         student_number = getattr(self, 'logged_in_student_number', None)
         if not student_number:
             self.show_generic_dialog("Login required to add favorites.")
@@ -1160,9 +1218,9 @@ class AnoWalangTutulong(MDApp):
             self.show_generic_dialog("Already in favorites.")
         else:
             cursor.execute("""
-                INSERT INTO favorites (student_number, book_id, title, author, category)
-                VALUES (?, ?, ?, ?, ?)
-            """, (student_number, book_id, title, author, category))
+                INSERT INTO favorites (student_number, book_id, title, author, category, availability)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (student_number, book_id, title, author, category, availability))
             conn.commit()
             self.show_generic_dialog("Added to favorites!")
 
@@ -1171,9 +1229,36 @@ class AnoWalangTutulong(MDApp):
     # --- Load Favorites ---
     def load_favorites(self):
         try:
-            favorites_screen = self.root.get_screen("favorites_screen")
+            main_screen = self.root.get_screen('main_screen')
+
+            screen_manager = None
+            for child in main_screen.children:
+                if hasattr(child, 'children') and len(child.children) > 0:
+                    for subchild in child.children:
+                        if hasattr(subchild, 'current'):
+                            screen_manager = subchild
+                            break
+                if screen_manager:
+                    break
+
+            if not screen_manager:
+                print("Could not find screen manager")
+                return
+
+            print(f"Found screen manager: {screen_manager}")
+            print(f"Available screens: {[screen.name for screen in screen_manager.screens]}")
+
+            # Get favorites screen
+            favorites_screen = screen_manager.get_screen('favorites_screen')
             container = favorites_screen.ids.favorites_container
+
+            # Clear existing widgets
             container.clear_widgets()
+
+            print(f"Container found: {container}")
+            print(f"Children count before: {len(container.children)}")
+
+            # Category images mapping
             category_images = {
                 "Information Technology": "book_images/cpe.jfif",
                 "Hospitality Management": "book_images/hm.jpeg",
@@ -1181,28 +1266,41 @@ class AnoWalangTutulong(MDApp):
                 "Office Administration": "book_images/oa.jfif",
                 "PE": "book_images/pe.jpeg"
             }
-            print(f"Container height: {container.height}")
-            print(f"Children count: {len(container.children)}")
+
+            # Get the logged-in student number
             student_number = getattr(self, "logged_in_student_number", None)
-            print(" Logged in student number:", student_number)
+            print(f"Logged in student number: {student_number}")
 
             if not student_number:
-                self.show_generic_dialog("Please log in first.")
+                login_label = MDLabel(
+                    text="Please log in to view your favorites",
+                    size_hint_y=None,
+                    height="48dp",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1),
+                    halign="center"
+                )
+                container.add_widget(login_label)
                 return
 
+            # Database query
             conn = sqlite3.connect("library.db")
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT book_id, title, author, category 
-                FROM favorites 
-                WHERE student_number = ?
+                SELECT f.book_id, f.title, f.author, f.category, b.availability
+                FROM favorites f
+                JOIN books b ON f.book_id = b.id
+                WHERE f.student_number = ?
             """, (student_number,))
             favorites = cursor.fetchall()
             conn.close()
 
-            for book_id, title, author, category in favorites:
-                image_source = category_images.get(category, "images/default_book.png")
-                print(f" Adding favorite: {title} | {book_id}")
+            print(f"Found {len(favorites)} favorite books in database")
+
+            for book_id, title, author, category, availability in favorites:
+                image_source = category_images.get(category, "book_images/default_book.png")
+                print(f"Adding favorite: {title} | {book_id}")
+
                 card = MDCard(
                     orientation="horizontal",
                     size_hint_y=None,
@@ -1232,25 +1330,84 @@ class AnoWalangTutulong(MDApp):
                     padding=(10, 0),
                 )
 
-                title_label = MDLabel(text=f"{title}  |  {book_id}", font_style="Title", theme_text_color="Custom",
-                                      text_color=(1, 1, 1, 1))
-                author_label = MDLabel(text=f"{author}", theme_text_color="Custom",
-                                       text_color=(1, 1, 1, 1))
-                info_label = MDLabel(text=f"{category}", font_style="Label", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+                title_label = MDLabel(
+                    text=f"{title}  |  {book_id}",
+                    font_style="Title",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1)
+                )
+                author_label = MDLabel(
+                    text=f"{author}",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1)
+                )
+                info_label = MDLabel(
+                    text=f"{category}  |  {availability}",
+                    font_style="Label",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1)
+                )
+
+                icon_row = MDBoxLayout(
+                    orientation="horizontal",
+                    spacing=5,
+                    size_hint_y=None,
+                    height="30dp"
+                )
+
+                favorite_button = MDIconButton(
+                    icon="heart-outline",
+                    theme_icon_color="Custom",
+                    icon_color=(1, 0, 0.5, 1),
+                    on_release=lambda x, bid=book_id: self.delete_from_favorites(bid)
+                )
+                icon_row.add_widget(favorite_button)
+
+                borrow_button_request = MDIconButton(
+                    icon="book-open-page-variant",
+                    theme_icon_color="Custom",
+                    icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
+                    on_release=lambda x, bid=book_id:
+                    self.borrow_book(bid)
+                )
+                if availability.lower() != "available":
+                    borrow_button_request.disabled = True
+                icon_row.add_widget(borrow_button_request)
 
                 text_box.add_widget(title_label)
                 text_box.add_widget(author_label)
                 text_box.add_widget(info_label)
+                text_box.add_widget(icon_row)
+
                 card.add_widget(image)
                 card.add_widget(text_box)
 
                 container.add_widget(card)
 
+            #container.add_widget(card)
+                print(f"Added widget for: {title}")
+
+            if len(favorites) == 0:
+                test_label = MDLabel(
+                    text="No favorites found.\nTry adding some books to favorites!",
+                    size_hint_y=None,
+                    font_style = "Headline",
+                    height="96dp",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1),
+                    halign="center",
+
+                )
+                container.add_widget(test_label)
+                print("Added 'no favorites' message")
+
+            print(f"Children count after: {len(container.children)}")
 
         except Exception as e:
-            print(f" Error loading favorites: {e}")
+            print(f"Error loading favorites: {e}")
+            import traceback
+            traceback.print_exc()
 
-    # here
 
     def request_return_book(self, book_id, title, author, category):
         student_number = getattr(self, 'logged_in_student_number', None)
@@ -1730,9 +1887,10 @@ class AnoWalangTutulong(MDApp):
                 return_btn = MDIconButton(
                     icon="book-arrow-left-outline",
                     theme_icon_color="Custom",
-                    icon_color=(1, 0, 0.5, 1),
+                    icon_color=(1, 0, 0, 1),
                     on_release=lambda x, bid=book_id, t=title, a=author, c=category: self.request_return_book(bid, t, a, c) )
                 icon_row.add_widget(return_btn)
+
 
             text_box.add_widget(title_label)
             text_box.add_widget(author_label)
@@ -1812,6 +1970,110 @@ class AnoWalangTutulong(MDApp):
             card.add_widget(text_box)
 
             container.add_widget(card)
+
+    def search_books(self, search_text):
+
+        #
+        screen = self.root.get_screen("search_screen")
+        container = screen.ids.search_results_container
+        container.clear_widgets()
+
+        if not search_text.strip():
+            return
+
+        conn = sqlite3.connect("library.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, title, author, category, availability
+            FROM books
+            WHERE title LIKE ? AND availability = 'Available'
+        """, (f"%{search_text}%",))
+        results = cursor.fetchall()
+        conn.close()
+
+        category_images = {
+            "Information Technology": "book_images/cpe.jfif",
+            "Hospitality Management": "book_images/hm.jpeg",
+            "Computer Engineering": "book_images/it.jfif",
+            "Office Administration": "book_images/oa.jfif",
+            "PE": "book_images/pe.jpeg"
+        }
+
+        for book_id, title, author, category, availability in results:
+            image_source = category_images.get(category, "book_images/default_book.png")
+
+            card = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="160dp",
+                padding=10,
+                style="elevated",
+                md_bg_color=(55 / 255, 68 / 255, 77 / 255, 1),
+            )
+
+            image = Image(
+                source=image_source,
+                size_hint_x=None,
+                width="100dp",
+                allow_stretch=True,
+                keep_ratio=True
+            )
+
+            text_box = MDBoxLayout(
+                orientation="vertical",
+                spacing=5,
+                padding=(10, 0),
+            )
+
+            title_label = MDLabel(text=title, font_style="Title", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            author_label = MDLabel(text=f"{author}  |  {book_id}", theme_text_color="Custom", text_color=(1, 1, 1, 1))
+            info_label = MDLabel(text=f"{category} | {availability}", font_style="Label", theme_text_color="Custom",
+                                 text_color=(1, 1, 1, 1))
+
+            icon_row = MDBoxLayout(
+                orientation="horizontal",
+                spacing=5,
+                size_hint_y=None,
+                height="30dp"
+            )
+
+            favorite_button = MDIconButton(
+                icon="heart-outline",
+                theme_icon_color="Custom",
+                icon_color=(1, 0, 0.5, 1),
+                on_release=lambda x, bid=book_id, t=title, a=author, c=category, avail=availability:
+                self.add_to_favorites(bid, t, a, c, avail)
+            )
+            icon_row.add_widget(favorite_button)
+
+            borrow_button = MDIconButton(
+                icon="book-open-page-variant",
+                theme_icon_color="Custom",
+                icon_color=(20 / 255, 95 / 255, 245 / 255, 1),
+                on_release=lambda x, bid=book_id: self.borrow_book(bid)
+            )
+            icon_row.add_widget(borrow_button)
+
+            text_box.add_widget(title_label)
+            text_box.add_widget(author_label)
+            text_box.add_widget(info_label)
+            text_box.add_widget(icon_row)
+
+            card.add_widget(image)
+            card.add_widget(text_box)
+
+            container.add_widget(card)
+
+        if not results:
+            container.add_widget(
+                MDLabel(
+                    text="No books found.",
+                    halign="center",
+                    theme_text_color="Custom",
+                    text_color=(1, 1, 1, 1)
+                )
+            )
+
 
     def build(self):
         self.insert_books_from_data()

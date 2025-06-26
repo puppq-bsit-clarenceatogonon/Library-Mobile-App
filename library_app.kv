@@ -49,9 +49,6 @@ MDScreenManager:
     ViewBorrowedScreen:
         name: "view_borrowed_screen"
 
-    #ReturnBooksScreen:
-        #name: "return_books_screen"
-
     PenaltyScreen:
         name: "penalty_screen"
 
@@ -149,8 +146,8 @@ MDScreenManager:
         MDScrollView:
             MDList:
                 id: home_recommendations_list
-                padding: "10dp"
-                spacing: 10
+                padding: [50, 20, 50, 20]
+                spacing: 30
 
         MDBoxLayout:
             size_hint_y: None
@@ -192,8 +189,8 @@ MDScreenManager:
         MDScrollView:
             MDList:
                 id: favorites_container
-                padding: "10dp"
-                spacing: 10
+                padding: [50, 20, 50, 20]
+                spacing: 30
 
         MDBoxLayout:
             size_hint_y: None
@@ -230,11 +227,38 @@ MDScreenManager:
                     theme_icon_color: "Custom"
                     icon_color: "red"
                     on_press: app.switch_screen("profile_screen")
+        MDBoxLayout:
+            orientation: "vertical"
+            padding: (90,40,90,20)
+            size_hint_y: None
+            height: 90
+
+            MDTextField:
+                id: search_input
+                theme_fill_color: "Custom"
+                fill_color_normal: "white"
+                fill_color_focus: "white"
+                theme_line_color: "Custom"
+                line_color_normal: (0.16, 0.38, 1.0, 1)
+                line_color_focus: (0.16, 0.38, 1.0, 1)
+                theme_text_color: "Custom"
+                text_color_normal: "white"
+                text_color_focus: "white"
+                on_text: app.search_books(self.text)
+
+                MDTextFieldHintText:
+                    text: "Enter book title"
+                    text_color_normal: "white"
+                    text_color_focus: "white"
+
 
         MDScrollView:
             MDList:
-                id: container
-                spacing: 10
+                id: search_results_container
+                size_hint_y: None
+                height: self.minimum_height
+                padding: [50, 20, 50, 20]
+                spacing: 30
 
         MDBoxLayout:
             size_hint_y: None
